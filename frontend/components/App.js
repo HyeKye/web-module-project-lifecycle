@@ -77,6 +77,15 @@ export default class App extends React.Component {
     .catch(this.setAxiosResponseError)
   }
 
+  handleClear = () => {
+    this.setState({
+      ...this.state, 
+      todos: this.state.todos.filter(todo => { 
+        return (todo.completed === false)
+    })
+  });
+  }
+
   render() {
     return (
       <div>
@@ -93,8 +102,8 @@ export default class App extends React.Component {
             placeholder="Type something ToDo"
             />
             <input type="submit"></input>
-            <button>Clear Completed</button>
           </form>
+          <button onClick={this.handleClear}>Clear Completed</button>
         </div>
       </div>
     )
