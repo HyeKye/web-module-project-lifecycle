@@ -18,18 +18,28 @@ export default class App extends React.Component {
     })
   }
 
+  setAxiosResponseError = err => this.setState({
+    ...this.state, 
+    error: err.response.data.message
+  })
+
+  resetForm = () => 
+    this.setState({
+      ...this.state,
+      todoNameInput: ''
+    })
+  
+
   postNewTodo = () => {
     axios.post(URL, {name: this.state.todoNameInput})
     .then (res => {
-      this.fetchAllTodos()
       this.setState({
         ...this.state,
-        todoNameInput: ''
+        todos: this.state.todos.concat(res.data.data)
       })
-    })
-    .catch (err => {
-
-    })
+      this.resetForm()
+      })
+    .catch (this.setAxiosResponseError)
   }
 
   onInputSubmit = e => {
@@ -45,15 +55,26 @@ export default class App extends React.Component {
         todos: res.data.data })
     })
     .catch(err => {
-      this.setState({
-        ...this.state,
-        error: err.response.data.message
-      })
+      this.setState(this.setAxiosResponseError)
     })
   }
 
   componentDidMount(){
     this.fetchAllTodos()
+  }
+
+  toggleCompleted = id => () => {
+    axios.patch(`${URL}/${id}`)
+    .then(res => {
+      this.setState({
+        ...this.state,
+        todos: this.state.todos.map(td =>{
+          if (td.id !== id) return td
+          return res.data.data
+        })
+      })
+    })
+    .catch(this.setAxiosResponseError)
   }
 
   render() {
@@ -62,7 +83,7 @@ export default class App extends React.Component {
         <div id="todos">
           <h2>Todos:</h2>
           {this.state.todos.map(td => {
-            return <div key={td.id}>{td.name}</div>
+            return <div onClick={this.toggleCompleted(td.id)} key={td.id}>{td.name} {td.completed ? '- Completed' : ''}</div>
           })}
           <form id="todoForm" onSubmit={this.onInputSubmit}> 
             <input
